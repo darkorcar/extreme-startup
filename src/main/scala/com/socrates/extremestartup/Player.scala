@@ -2,7 +2,6 @@ package com.socrates.extremestartup
 
 import akka.actor.{Actor, ActorLogging, Props}
 import com.socrates.extremestartup.Game.{NoAnswer, SuccessfulAnswer, UnsuccessfulAnswer}
-import com.socrates.extremestartup.QueryBank.Query
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -16,7 +15,10 @@ class Player(id: Int, name: String, baseUrl: String, wsClient: StandaloneAhcWSCl
 
   override def receive: Receive = {
 
-    case Query(question,expectedAnswer) =>
+    case query: Query =>
+
+      import query._
+
       log.info("Question Received!")
 
       val game = sender()

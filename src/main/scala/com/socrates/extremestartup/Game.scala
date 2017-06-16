@@ -2,7 +2,6 @@ package com.socrates.extremestartup
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.socrates.extremestartup.Game._
-import com.socrates.extremestartup.QueryBank.Query
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -16,6 +15,8 @@ class Game(wSClient: StandaloneAhcWSClient)
 
   private var players = Map.empty[Int, ActorRef]
   private var scores = Map.empty[Int, Score]
+
+  private var round = 0
 
   override def receive: Receive = {
 
@@ -49,13 +50,14 @@ class Game(wSClient: StandaloneAhcWSClient)
       sender() ! Scores(scores.values.toList)
 
     case GameTick =>
-      val query = nextQuery()
+      val query = nextQuery(round)
       players.values.foreach { playerRef =>
         playerRef ! query
       }
       context.system.scheduler.scheduleOnce(10 seconds) {
         self ! GameTick
       }
+      increaseRound
 
     case SuccessfulAnswer(playerId) =>
       scorePlayer(playerId, 1)
@@ -72,12 +74,14 @@ class Game(wSClient: StandaloneAhcWSClient)
 
   }
 
+
   def finished: Receive = {
     case GetScores =>
       log.info("GetScores received")
       sender() ! Scores(scores.values.toList)
   }
 
+  private def increaseRound: Unit = round = round + 1
 
   private def createPlayer(name: String, baseUrl: String, playerId: Int, wsClient: StandaloneAhcWSClient) = {
     context.actorOf(Player.props(playerId, name, baseUrl, wsClient), s"Player-$playerId")

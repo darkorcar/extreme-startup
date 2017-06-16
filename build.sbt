@@ -1,5 +1,5 @@
 
-name := "akka-http"
+name := "extreme startup"
 
 version := "1.0"
 
