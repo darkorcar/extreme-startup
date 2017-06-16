@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import com.socrates.extremestartup.Game.{GetScores, RegisterPlayer, Scores}
+import com.socrates.extremestartup.Game.{GetScores, RegisterPlayer, Scores, StartGame}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -47,6 +47,15 @@ object WebServer extends App with JsonSupport {
             implicit val timeout = Timeout(5.seconds)
             val scores: Future[Scores] = (game ? GetScores).mapTo[Scores]
             complete(StatusCodes.OK, scores)
+          }
+        }
+      } ~
+      path("admin" / "start") {
+        put {
+          pathEndOrSingleSlash {
+            log.info("Start game")
+            game ! StartGame
+            complete(StatusCodes.OK)
           }
         }
       }
