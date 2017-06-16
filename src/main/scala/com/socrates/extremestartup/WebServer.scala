@@ -63,6 +63,15 @@ object WebServer extends App with JsonSupport {
             complete(StatusCodes.OK)
           }
         }
+      } ~
+      path("admin" / "finish") {
+        put {
+          pathEndOrSingleSlash {
+            log.info("Finish game")
+            game ! StartGame
+            complete(StatusCodes.OK)
+          }
+        }
       }
 
 

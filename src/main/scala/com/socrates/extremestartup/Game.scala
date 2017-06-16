@@ -2,16 +2,19 @@ package com.socrates.extremestartup
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.socrates.extremestartup.Game._
+import com.socrates.extremestartup.QueryBank.Query
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class Game(wSClient: StandaloneAhcWSClient) extends Actor with ActorLogging {
+class Game(wSClient: StandaloneAhcWSClient)
+  extends Actor
+    with ActorLogging
+    with QueryBank {
 
   private var players = Map.empty[Int, ActorRef]
-
   private var scores = Map.empty[Int, Score]
 
   override def receive: Receive = {
@@ -46,8 +49,9 @@ class Game(wSClient: StandaloneAhcWSClient) extends Actor with ActorLogging {
       sender() ! Scores(scores.values.toList)
 
     case GameTick =>
+      val query = nextQuery()
       players.values.foreach { playerRef =>
-        playerRef ! Query("question", "expected answer")
+        playerRef ! query
       }
       context.system.scheduler.scheduleOnce(10 seconds) {
         self ! GameTick
@@ -62,7 +66,18 @@ class Game(wSClient: StandaloneAhcWSClient) extends Actor with ActorLogging {
     case NoAnswer(playerId) =>
       scorePlayer(playerId, -2)
 
+    case FinishGame =>
+      log.info("Finish game")
+      context.become(finished)
+
   }
+
+  def finished: Receive = {
+    case GetScores =>
+      log.info("GetScores received")
+      sender() ! Scores(scores.values.toList)
+  }
+
 
   private def createPlayer(name: String, baseUrl: String, playerId: Int, wsClient: StandaloneAhcWSClient) = {
     context.actorOf(Player.props(playerId, name, baseUrl, wsClient), s"Player-$playerId")
@@ -89,8 +104,6 @@ object Game {
 
   case class Scores(scores: List[Score])
 
-  case class Query(question: String, expectedAnswer: String)
-
   case class SuccessfulAnswer(playerId: Int)
 
   case class UnsuccessfulAnswer(playerId: Int)
@@ -98,7 +111,7 @@ object Game {
   case class NoAnswer(playerId: Int)
 
   case object StartGame
-
+  case object FinishGame
   case object GameTick
 
 }

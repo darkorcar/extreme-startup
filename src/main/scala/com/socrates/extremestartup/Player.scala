@@ -1,11 +1,11 @@
 package com.socrates.extremestartup
 
 import akka.actor.{Actor, ActorLogging, Props}
-import com.socrates.extremestartup.Game.{NoAnswer, Query, SuccessfulAnswer, UnsuccessfulAnswer}
+import com.socrates.extremestartup.Game.{NoAnswer, SuccessfulAnswer, UnsuccessfulAnswer}
+import com.socrates.extremestartup.QueryBank.Query
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import scala.util.{Failure, Success}
 
 
