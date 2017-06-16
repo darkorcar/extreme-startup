@@ -22,10 +22,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-slf4j" % "2.4.14",
     "ch.qos.logback" % "logback-classic" % "1.1.3",
     "com.typesafe.akka" %% "akka-http" % "10.0.6",
-    "de.heikoseeberger" %% "akka-http-circe" % "1.12.0",
-    "io.circe" %% "circe-core" % circeVersion,
-    "io.circe" %% "circe-generic" % circeVersion,
-    "io.circe" %% "circe-parser" % circeVersion,
+    "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.6",
 
     "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",

@@ -1,23 +1,31 @@
 package com.socrates.extremestartup
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import com.socrates.extremestartup.Game.{GetScores, RegisterPlayer, Score}
+import com.socrates.extremestartup.Game._
 
 
 class Game extends Actor with ActorLogging {
 
-  private var users: Seq[ActorRef] = List.empty[ActorRef]
+  private var players = Map.empty[Int, ActorRef]
+
+  private var scores = Map.empty[Int, Score]
+
 
   override def receive: Receive = {
 
     case RegisterPlayer(name, ip) =>
       log.info(s"User Register Request $name - $ip")
-      val newUser = context.actorOf(User.props(name, ip), s"Player-${users.size}")
-      users = users :+ newUser
+      val playerId = players.size
+      val newPlayer = context.actorOf(Player.props(playerId, name, ip), s"Player-$playerId")
+      players = players + (playerId -> newPlayer)
+      scores = scores + (playerId -> Score(name, 0))
+
+      sender() ! s"""{ "playerId" : "$playerId" }"""
+
 
     case GetScores =>
       log.info("GetScores received")
-      sender() ! List(Score("blah", 3))
+      sender() ! Scores(scores.values.toList)
 
 
     case _ => log.info("I got a msg")
@@ -30,8 +38,10 @@ object Game {
 
   case class RegisterPlayer(name: String, ip: String)
 
-  case class GetScores()
+  case object GetScores
 
   case class Score(name: String, points: Int)
+
+  case class Scores(scores: List[Score])
 
 }

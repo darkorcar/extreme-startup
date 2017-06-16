@@ -6,13 +6,17 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import akka.stream.ActorMaterializer
-import com.socrates.extremestartup.Game.{GetScores, RegisterPlayer}
 import akka.pattern.ask
+import akka.stream.ActorMaterializer
+import akka.util.Timeout
+import com.socrates.extremestartup.Game.{GetScores, RegisterPlayer, Scores}
 
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.language.postfixOps
 import scala.util.{Failure, Success}
 
-object WebServer extends App {
+object WebServer extends App with JsonSupport {
 
   implicit val system = ActorSystem("actor-system")
 
@@ -22,7 +26,7 @@ object WebServer extends App {
 
   private val log = Logging(system, getClass.getName)
 
-  val game: ActorRef = system.actorOf(Game.props(),"GameActor")
+  val game: ActorRef = system.actorOf(Game.props(), "GameActor")
 
   val routes: Route =
 
@@ -30,21 +34,22 @@ object WebServer extends App {
       post {
         formFields('name, 'ip) { (name, ip) =>
           log.info(s"Register Request: $name -> $ip")
-          game ! RegisterPlayer(name,ip)
-          complete(StatusCodes.Created, "something")
+          implicit val timeout = Timeout(5.seconds)
+          val playerId: Future[String] = (game ? RegisterPlayer(name, ip)).mapTo[String]
+          complete(StatusCodes.Created, playerId)
         }
       }
     } ~
-  path("scores") {
-    get {
-      pathEndOrSingleSlash {
-        val scores = game ? GetScores()
-
-
-        complete(StatusCodes.OK,scores)
+      path("scores") {
+        get {
+          pathEndOrSingleSlash {
+            log.info("Get scores")
+            implicit val timeout = Timeout(5.seconds)
+            val scores: Future[Scores] = (game ? GetScores).mapTo[Scores]
+            complete(StatusCodes.OK, scores)
+          }
+        }
       }
-    }
-  }
 
 
   Http().bindAndHandle(routes, "localhost", 1234).onComplete {

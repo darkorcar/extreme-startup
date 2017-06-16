@@ -3,7 +3,7 @@ package com.socrates.extremestartup
 import akka.actor.{Actor, ActorLogging, Props}
 
 
-class User(name: String, ip: String) extends Actor with ActorLogging {
+class Player(id: Int, name: String, ip: String) extends Actor with ActorLogging {
 
   log.info("I've been created!")
 
@@ -13,8 +13,8 @@ class User(name: String, ip: String) extends Actor with ActorLogging {
   }
 }
 
-object User {
+object Player {
 
-  def props(name: String, ip: String): Props =
-    Props(new User(name, ip))
+  def props(id: Int, name: String, ip: String): Props =
+    Props(new Player(id, name, ip))
 }
