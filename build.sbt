@@ -1,0 +1,34 @@
+
+name := "akka-http"
+
+version := "1.0"
+
+organization := "com.prototypes"
+
+scalaVersion := "2.12.2"
+
+resolvers ++= Seq(
+  "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+  Resolver.bintrayRepo("hseeberger", "maven"),
+  "Artima Maven Repository" at "http://repo.artima.com/releases",
+  "Sonatype Repository" at "https://oss.sonatype.org/content/repositories/releases/"
+)
+
+libraryDependencies ++= {
+
+  val circeVersion = "0.7.0"
+
+  Seq(
+    "com.typesafe.akka" %% "akka-slf4j" % "2.4.14",
+    "ch.qos.logback" % "logback-classic" % "1.1.3",
+    "com.typesafe.akka" %% "akka-http" % "10.0.6",
+    "de.heikoseeberger" %% "akka-http-circe" % "1.12.0",
+    "io.circe" %% "circe-core" % circeVersion,
+    "io.circe" %% "circe-generic" % circeVersion,
+    "io.circe" %% "circe-parser" % circeVersion,
+
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+    "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",
+    "com.typesafe.akka" %% "akka-http-testkit" % "10.0.6"
+  )
+}
