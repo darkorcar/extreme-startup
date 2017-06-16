@@ -23,6 +23,7 @@ libraryDependencies ++= {
     "ch.qos.logback" % "logback-classic" % "1.1.3",
     "com.typesafe.akka" %% "akka-http" % "10.0.6",
     "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.6",
+    "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.0.0-M10",
 
     "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",

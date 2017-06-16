@@ -10,6 +10,8 @@ import akka.pattern.ask
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.socrates.extremestartup.Game.{GetScores, RegisterPlayer, Scores, StartGame}
+import play.api.libs.ws.WSClientConfig
+import play.api.libs.ws.ahc.{AhcWSClientConfig, StandaloneAhcWSClient}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -26,16 +28,19 @@ object WebServer extends App with JsonSupport {
 
   private val log = Logging(system, getClass.getName)
 
-  val game: ActorRef = system.actorOf(Game.props(), "GameActor")
+
+  val wsClient = createWsClient()
+
+  val game: ActorRef = system.actorOf(Game.props(wsClient), "GameActor")
 
   val routes: Route =
 
     path("register") {
       post {
-        formFields('name, 'ip) { (name, ip) =>
-          log.info(s"Register Request: $name -> $ip")
+        formFields('name, 'baseUrl) { (name, baseUrl) =>
+          log.info(s"Register Request: $name -> $baseUrl")
           implicit val timeout = Timeout(5.seconds)
-          val playerId: Future[String] = (game ? RegisterPlayer(name, ip)).mapTo[String]
+          val playerId: Future[String] = (game ? RegisterPlayer(name, baseUrl)).mapTo[String]
           complete(StatusCodes.Created, playerId)
         }
       }
@@ -71,4 +76,15 @@ object WebServer extends App with JsonSupport {
       System.exit(1)
   }
 
+
+  private def createWsClient() = {
+    val config = AhcWSClientConfig(
+      wsClientConfig = WSClientConfig(
+        connectionTimeout = 2 seconds,
+        requestTimeout = 2 seconds
+      )
+    )
+
+    StandaloneAhcWSClient(config)
+  }
 }

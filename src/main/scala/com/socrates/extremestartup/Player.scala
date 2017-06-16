@@ -2,30 +2,42 @@ package com.socrates.extremestartup
 
 import akka.actor.{Actor, ActorLogging, Props}
 import com.socrates.extremestartup.Game.{NoAnswer, Query, SuccessfulAnswer, UnsuccessfulAnswer}
+import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
-import scala.util.Random
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import scala.util.{Failure, Success}
 
 
-class Player(id: Int, name: String, ip: String) extends Actor with ActorLogging {
-
-  log.info("I've been created!")
+class Player(id: Int, name: String, baseUrl: String, wsClient: StandaloneAhcWSClient)
+  extends Actor
+    with PlayerGateway
+    with ActorLogging {
 
   override def receive: Receive = {
 
     case Query(question,expectedAnswer) =>
       log.info("Question Received!")
-      Random.nextInt(3) match {
-        case 0 => sender() ! SuccessfulAnswer(id)
-        case 1 => sender() ! UnsuccessfulAnswer(id)
-        case 2 => sender() ! NoAnswer(id)
-      }
 
+      val game = sender()
+
+      call(baseUrl, question, wsClient).onComplete {
+        case Success(answer) if answer == expectedAnswer =>
+          log.info("Answer Successful!")
+          game ! SuccessfulAnswer(id)
+        case Success(answer) if answer != expectedAnswer =>
+          log.info("Answer UnSuccessful!")
+          game ! UnsuccessfulAnswer(id)
+        case Failure(e) =>
+          log.info(s"Player failed to answer with exception message ${e.getMessage}")
+          game ! NoAnswer(id)
+      }
   }
 }
 
 object Player {
 
-  def props(id: Int, name: String, ip: String): Props =
-    Props(new Player(id, name, ip))
+  def props(id: Int, name: String, ip: String, wsClient: StandaloneAhcWSClient): Props =
+    Props(new Player(id, name, ip, wsClient))
 
 }
