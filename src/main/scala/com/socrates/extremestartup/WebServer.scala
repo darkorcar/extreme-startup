@@ -18,7 +18,7 @@ import scala.util.{Failure, Success}
 
 object WebServer extends App with JsonSupport {
 
-  implicit val system = ActorSystem("actor-system")
+  implicit val system = ActorSystem("game-system")
 
   implicit private val materializer = ActorMaterializer()
 
