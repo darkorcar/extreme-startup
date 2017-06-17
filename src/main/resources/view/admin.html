@@ -9,7 +9,32 @@
 
     <script>
 
+    function hiddeNotifications(){
+      $("#success-notification").removeClass("is-hidden");
+      $("#error-notification").removeClass("is-hidden");
+    }
+
+    function consoleAction(path, action){
+
+      $("#success-notification").removeClass("is-hidden");
+      $("#error-notification").removeClass("is-hidden");
+
+      $.ajax( { url : path, method: "PUT" } )
+        .done(function(data) {
+         $("#success-notification").html();
+       })
+       .fail(function(error) {
+         console.log("Fail to start game!");
+      });
+
+
+      $("#success-notification").addClass("is-hidden");
+      $("#error-notification").addClass("is-hidden");
+    }
+
     $(document).ready(function(){
+
+      $('#success-notification').html("Paused!");
 
       $( "#start" ).click(function() {
         $.ajax( { url : "/admin/start", method: "PUT" } )
@@ -71,6 +96,12 @@
 
     <br/>
     <div class="container">
+
+      <div id="success-notification" class="notification is-success is-hidden">
+      </div>
+
+      <div id="error-notification" class="notification is-danger is-hidden">
+      </div>
 
       <div class="columns is-mobile">
 
