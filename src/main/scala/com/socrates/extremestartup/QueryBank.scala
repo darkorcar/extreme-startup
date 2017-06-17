@@ -16,16 +16,16 @@ trait QueryBank {
     () => BinaryOperationQuery(1, "what is @1@ plus @2@", { case (a, b) => a + b }),
     () => UnaryOperationQuery(2, "what is the square root of @1@", { case (a) => Math.sqrt(a).toInt }),
     () => UnaryOperationQuery(2, "what is the @1@^2", { case (a) => a * a }),
-    () => UnaryOperationQuery(2, "what is the @1@^3", { case (a) => a * a * 1 }),
+    () => UnaryOperationQuery(2, "what is the @1@^3", { case (a) => a * a * a }),
     () => BinaryOperationQuery(3, "what is @1@ minus @2@", { case (a, b) => a - b }),
     () => BinaryOperationQuery(3, "what is @1@ times @2@", { case (a, b) => a * b }),
     () => ListOperationQuery(4, "what is the highest number", { list => list.max }),
     () => ListOperationQuery(4, "what is the lowest number", { list => list.min }),
     () => UnaryOperationQuery(5, "what is the factorial of @1@", { case (a) => factorial(a) }),
     () => ListToStringOperationQuery(5, "which are the even numbers", { case list: List[Int] => list.filter(_ % 2 == 0).mkString(",") }),
-    () => ListToStringOperationQuery(5, "which are the odd numbers", { case list: List[Int] => list.filter(_ % 2 == 0).mkString(",") }),
+    () => ListToStringOperationQuery(5, "which are the odd numbers", { case list: List[Int] => list.filter(_ % 2 == 1).mkString(",") }),
     () => ListToStringOperationQuery(7, "which are the prime numbers", { case list: List[Int] => list.filter(isPrime).mkString(",") }),
-    () => FibOperationQuery(7, "what is the @1@th number in the Fibonacci sequence", { case (a) => fib(a) }),
+    () => UnaryOperationQuery(7, "what is the @1@th number in the Fibonacci sequence", { case (a) => fib(a) }),
     () => TernaryOperationQuery(8, "what is @1@ plus @2@ plus @3@", { case (a, b, c) => a + b + c }),
     () => TernaryOperationQuery(8, "what is @1@ plus @2@ multiplied by @3@", { case (a, b, c) => a + b * c }),
     () => TernaryOperationQuery(8, "what is @1@ multiplied by @2@ plus @3@", { case (a, b, c) => a * b + c })
@@ -89,16 +89,6 @@ case class BasicQuery(
 
 case class UnaryOperationQuery(override val difficultyLevel: Int, text: String, operation: (Int) => Int) extends Query {
 
-  val number1 = Random.nextInt(10)
-
-  override val question: String = text
-    .replace("@1@", (number1 * number1).toString)
-  override val expectedAnswer: String = operation(number1).toString
-
-}
-
-case class FibOperationQuery(override val difficultyLevel: Int, text: String, operation: (Int) => Int) extends Query {
-
   val number = Random.nextInt(10)
 
   override val question: String = text
@@ -106,6 +96,7 @@ case class FibOperationQuery(override val difficultyLevel: Int, text: String, op
   override val expectedAnswer: String = operation(number).toString
 
 }
+
 
 case class BinaryOperationQuery(override val difficultyLevel: Int, text: String, operation: (Int, Int) => Int) extends Query {
 
