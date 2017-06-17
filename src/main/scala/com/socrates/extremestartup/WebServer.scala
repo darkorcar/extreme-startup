@@ -9,7 +9,8 @@ import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import com.socrates.extremestartup.Game.{GetScores, RegisterPlayer, Scores, StartGame}
+import com.socrates.extremestartup.Game._
+import com.socrates.extremestartup.Player.PlayerHistory
 import play.api.libs.ws.WSClientConfig
 import play.api.libs.ws.ahc.{AhcWSClientConfig, StandaloneAhcWSClient}
 
@@ -55,6 +56,16 @@ object WebServer extends App with JsonSupport {
           }
         }
       } ~
+      path("scores" / Segment) { playerId:String =>
+        get {
+          pathEndOrSingleSlash {
+            log.info("Get scores")
+            implicit val timeout = Timeout(5.seconds)
+            val history: Future[PlayerHistory] = (game ? GetPlayerHistory(playerId)).mapTo[PlayerHistory]
+            complete(StatusCodes.OK, history)
+          }
+        }
+      }~
       path("admin" / "start") {
         put {
           pathEndOrSingleSlash {

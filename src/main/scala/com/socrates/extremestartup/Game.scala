@@ -13,8 +13,8 @@ class Game(wSClient: StandaloneAhcWSClient)
     with ActorLogging
     with QueryBank {
 
-  private var players = Map.empty[Int, ActorRef]
-  private var scores = Map.empty[Int, Score]
+  private var players = Map.empty[String, ActorRef]
+  private var scores = Map.empty[String, Score]
 
   private var round = 0
 
@@ -23,10 +23,10 @@ class Game(wSClient: StandaloneAhcWSClient)
     case RegisterPlayer(name, baseUrl) =>
       log.info(s"User Register Request $name - $baseUrl")
       val playerId = players.size
-      val newPlayer = createPlayer(name, baseUrl, playerId, wSClient)
+      val newPlayer = createPlayer(name, baseUrl, playerId.toString, wSClient)
 
-      players = players + (playerId -> newPlayer)
-      scores = scores + (playerId -> Score(name, 0))
+      players = players + (playerId.toString -> newPlayer)
+      scores = scores + (playerId.toString -> Score(name, 0))
 
       sender() ! s"""{ "playerId" : "$playerId" }"""
 
@@ -34,6 +34,9 @@ class Game(wSClient: StandaloneAhcWSClient)
     case GetScores =>
       log.info("GetScores received")
       sender() ! Scores(scores.values.toList)
+
+    case msg@GetPlayerHistory(playerId) =>
+      players.get(playerId).foreach(player => player forward msg)
 
     case StartGame =>
       log.info("Start game")
@@ -80,6 +83,9 @@ class Game(wSClient: StandaloneAhcWSClient)
     case NoAnswer(playerId) =>
       scorePlayer(playerId, -20)
 
+    case msg@GetPlayerHistory(playerId) =>
+      players.get(playerId).foreach(player => player forward msg)
+
     case FinishGame =>
       log.info("Finish game")
       context.become(finished)
@@ -91,15 +97,18 @@ class Game(wSClient: StandaloneAhcWSClient)
     case GetScores =>
       log.info("GetScores received")
       sender() ! Scores(scores.values.toList)
+
+    case msg@GetPlayerHistory(playerId) =>
+      players.get(playerId).foreach(player => player forward msg)
   }
 
   private def increaseRound: Unit = round = round + 1
 
-  private def createPlayer(name: String, baseUrl: String, playerId: Int, wsClient: StandaloneAhcWSClient) = {
+  private def createPlayer(name: String, baseUrl: String, playerId: String, wsClient: StandaloneAhcWSClient) = {
     context.actorOf(Player.props(playerId, name, baseUrl, wsClient), s"Player-$playerId")
   }
 
-  private def scorePlayer(playerId: Int, points: Int): Unit = {
+  private def scorePlayer(playerId: String, points: Int): Unit = {
     scores
       .get(playerId)
       .foreach { score =>
@@ -115,20 +124,21 @@ object Game {
   case class RegisterPlayer(name: String, ip: String)
 
   case object GetScores
+  case class GetPlayerHistory(playerId:String)
 
   case class Score(name: String, points: Int)
 
   case class Scores(scores: List[Score])
 
-  case class SuccessfulAnswer(playerId: Int)
+  case class SuccessfulAnswer(playerId: String)
 
-  case class UnsuccessfulAnswer(playerId: Int)
+  case class UnsuccessfulAnswer(playerId: String)
 
-  case class NoAnswer(playerId: Int)
+  case class NoAnswer(playerId: String)
 
   case object StartGame
   case object FinishGame
   case object GameTick
-  case class GameTickForPlayer(playerId: Int)
+  case class GameTickForPlayer(playerId: String)
 
 }

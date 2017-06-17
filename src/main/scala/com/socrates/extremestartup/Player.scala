@@ -1,17 +1,22 @@
 package com.socrates.extremestartup
 
+import java.util.Date
+
 import akka.actor.{Actor, ActorLogging, Props}
-import com.socrates.extremestartup.Game.{NoAnswer, SuccessfulAnswer, UnsuccessfulAnswer}
+import com.socrates.extremestartup.Game.{GetPlayerHistory, NoAnswer, SuccessfulAnswer, UnsuccessfulAnswer}
+import com.socrates.extremestartup.Player.{PlayerHistory, Response}
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 
-class Player(id: Int, name: String, baseUrl: String, wsClient: StandaloneAhcWSClient)
+class Player(id: String, name: String, baseUrl: String, wsClient: StandaloneAhcWSClient)
   extends Actor
     with PlayerGateway
     with ActorLogging {
+
+  private var history = List.empty[Response]
 
   override def receive: Receive = {
 
@@ -25,21 +30,32 @@ class Player(id: Int, name: String, baseUrl: String, wsClient: StandaloneAhcWSCl
 
       call(baseUrl, question, wsClient).onComplete {
         case Success(answer) if answer.toUpperCase == expectedAnswer.toUpperCase =>
-          log.info(s"Answer Successful! Question(${question}) -> $answer")
+          log.info(s"Answer Successful! Question($question) -> $answer")
           game ! SuccessfulAnswer(id)
+          history = history.::(Response(new Date().toString,"","SUCCESSFUL"))
+
         case Success(answer) if answer.toUpperCase != expectedAnswer.toUpperCase =>
-          log.info(s"Answer UnSuccessful! Question(${question}) Expected(${expectedAnswer.toUpperCase}) Got(${answer.toUpperCase})")
+          log.info(s"Answer UnSuccessful! Question($question) Expected(${expectedAnswer.toUpperCase}) Got(${answer.toUpperCase})")
           game ! UnsuccessfulAnswer(id)
+          history = history.::(Response(new Date().toString,"","UNSUCCESSFUL"))
         case Failure(e) =>
           log.info(s"Player failed to answer with exception message ${e.getMessage}")
           game ! NoAnswer(id)
+          history = history.::(Response(new Date().toString,"","CRASH"))
       }
+
+    case GetPlayerHistory(playerId) =>
+      sender() ! PlayerHistory(history)
   }
 }
 
 object Player {
 
-  def props(id: Int, name: String, ip: String, wsClient: StandaloneAhcWSClient): Props =
+  def props(id: String, name: String, ip: String, wsClient: StandaloneAhcWSClient): Props =
     Props(new Player(id, name, ip, wsClient))
+
+
+  case class PlayerHistory(responses: List[Response])
+  case class Response(time: String, questionHash: String, result: String)
 
 }
