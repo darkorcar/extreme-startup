@@ -36,12 +36,10 @@ trait QueryBank {
     val minLevel = calculateMinLevel(round)
     val maxLevel = calculateMaxLevel(round)
 
-
-
     val filtered = questions
       .map(_())
       .filter(_.difficultyLevel >= minLevel)
-      .filter(_.difficultyLevel <= maxLevel)
+      //.filter(_.difficultyLevel <= maxLevel)
 
     Random.shuffle(filtered).head
   }
