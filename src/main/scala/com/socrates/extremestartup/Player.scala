@@ -32,7 +32,7 @@ class Player(id: String, name: String, baseUrl: String, wsClient: StandaloneAhcW
       call(baseUrl, s"$hash $question", wsClient).onComplete {
         case Success(answer) if answer.toUpperCase == expectedAnswer.toUpperCase =>
           log.info(s"Answer Successful! Question($question) -> $answer")
-          game ! SuccessfulAnswer(id)
+          game ! SuccessfulAnswer(id, difficultyLevel)
           history = history.::(Response(formatter.format(new Date()), hash, "SUCCESSFUL"))
 
         case Success(answer) if answer.toUpperCase != expectedAnswer.toUpperCase =>

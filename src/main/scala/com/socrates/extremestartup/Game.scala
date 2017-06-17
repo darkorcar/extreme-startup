@@ -33,7 +33,7 @@ class Game(wSClient: StandaloneAhcWSClient)
 
     case GetScores =>
       log.info("GetScores received")
-      sender() ! Scores(scores.values.toList.sortBy(- _.points))
+      sender() ! Scores(scores.values.toList.sortBy(-_.points))
 
     case msg@GetPlayerHistory(playerId) =>
       players.get(playerId).foreach(player => player forward msg)
@@ -64,15 +64,10 @@ class Game(wSClient: StandaloneAhcWSClient)
 
     case GameTickForPlayer(playerId) =>
       val query = nextQuery(round)
-      players
-        .filterKeys(_ == playerId)
-        .values
-        .foreach { playerRef =>
-        playerRef ! query
-      }
+      players.get(playerId).foreach(player => player ! query)
 
-    case SuccessfulAnswer(playerId) =>
-      scorePlayer(playerId, 1)
+    case SuccessfulAnswer(playerId,questionLevel) =>
+      scorePlayer(playerId, questionLevel)
       context.system.scheduler.scheduleOnce(3 seconds) {
         self ! GameTickForPlayer(playerId)
       }
@@ -81,7 +76,7 @@ class Game(wSClient: StandaloneAhcWSClient)
       scorePlayer(playerId, -1)
 
     case NoAnswer(playerId) =>
-      scorePlayer(playerId, -20)
+      scorePlayer(playerId, -10)
 
     case msg@GetPlayerHistory(playerId) =>
       players.get(playerId).foreach(player => player forward msg)
@@ -124,21 +119,25 @@ object Game {
   case class RegisterPlayer(name: String, ip: String)
 
   case object GetScores
-  case class GetPlayerHistory(playerId:String)
+
+  case class GetPlayerHistory(playerId: String)
 
   case class Score(name: String, points: Int)
 
   case class Scores(scores: List[Score])
 
-  case class SuccessfulAnswer(playerId: String)
+  case class SuccessfulAnswer(playerId: String, questionLevel: Int)
 
   case class UnsuccessfulAnswer(playerId: String)
 
   case class NoAnswer(playerId: String)
 
   case object StartGame
+
   case object FinishGame
+
   case object GameTick
+
   case class GameTickForPlayer(playerId: String)
 
 }
