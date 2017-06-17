@@ -24,11 +24,11 @@ class Player(id: Int, name: String, baseUrl: String, wsClient: StandaloneAhcWSCl
       val game = sender()
 
       call(baseUrl, question, wsClient).onComplete {
-        case Success(answer) if answer == expectedAnswer =>
-          log.info("Answer Successful!")
+        case Success(answer) if answer.toUpperCase == expectedAnswer.toUpperCase =>
+          log.info(s"Answer Successful! -> $answer")
           game ! SuccessfulAnswer(id)
-        case Success(answer) if answer != expectedAnswer =>
-          log.info("Answer UnSuccessful!")
+        case Success(answer) if answer.toUpperCase != expectedAnswer.toUpperCase =>
+          log.info(s"Answer UnSuccessful! Expected(${answer.toUpperCase}) Got(${expectedAnswer.toUpperCase()})")
           game ! UnsuccessfulAnswer(id)
         case Failure(e) =>
           log.info(s"Player failed to answer with exception message ${e.getMessage}")
