@@ -2,42 +2,43 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>ExS Kata</title>
+    <title>Xs Kata</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.2/css/bulma.min.css">
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
-  </head>
-  <script>
 
-  function reloadData(){
-    var jqxhr = $.get( "/scores")
-    .done(function(data) {
+    <script>
 
-       var scoreRows = data.scores.map(function (item, index) {
-         return "<tr><th>" + (index + 1) + "</th><td><a href=\"#\" title=\"" + item.name + "\">" + item.name + "</a></td><td>" + item.points + "</td></tr>"
-       });
+    function reloadData(){
+      var jqxhr = $.get( "/scores")
+      .done(function(data) {
 
-       var scoresTable = $('#scores-table');
-       if (scoreRows.length) {
-         scoresTable.html(scoreRows);
-       }
+         var scoreRows = data.scores.map(function (item, index) {
+           return "<tr><th>" + (index + 1) + "</th><td><a href=\"#\" title=\"" + item.name + "\">" + item.name + "</a></td><td>" + item.points + "</td></tr>"
+         });
 
-       console.log("refreshing data!");
+         var scoresTable = $('#scores-table');
+         if (scoreRows.length) {
+           scoresTable.html(scoreRows);
+         }
 
-     })
-     .fail(function(error) {
-      console.log( "error " + error);
+         console.log("refreshing data!");
+
+       })
+       .fail(function(error) {
+        console.log( "error " + error);
+      });
+    }
+
+    $(document).ready(function(){
+      setInterval(reloadData, 5000);
+      reloadData();
     });
-  }
 
-  $(document).ready(function(){
-    setInterval(reloadData, 5000);
-    reloadData();
-  });
+    </script>
 
+  </head>
 
-
-  </script>
   <body>
 
 
