@@ -5,38 +5,43 @@ import scala.util.Random
 trait QueryBank {
 
 
-  private val questions = List(
-    BasicQuery(1, "what is the capital of Serbia?", "Belgrade"),
-    BasicQuery(1, "who is the Prime Minister of Great Britain?", "Theresa May"),
-    BasicQuery(1, "what currency Great Britain uses?", "Pound"),
-    BasicQuery(1, "what currency did Spain use before the Euro?", "Peseta"),
-    BasicQuery(1, "what is the color of the snow?", "White"),
-    UnaryOperationQuery(2, "what is the square root of @1@?", { case (a) => Math.sqrt(a).toInt }),
-    UnaryOperationQuery(2, "what is the @1@^2?", { case (a) => a * a }),
-    UnaryOperationQuery(2, "what is the @1@^3?", { case (a) => a * a * 1 }),
-    UnaryOperationQuery(2, "what is the factorial of @1@?", { case (a) => factorial(a) }),
-    BinaryOperationQuery(2, "what is @1@ plus @2@?", { case (a, b) => a + b }),
-    BinaryOperationQuery(3, "what is @1@ minus @2@?", { case (a, b) => a - b }),
-    BinaryOperationQuery(3, "what is @1@ times @2@?", { case (a, b) => a * b }),
-    ListOperationQuery(4, "what is the highest number", { list => list.max }),
-    ListOperationQuery(5, "what is the lowest number", { list => list.min }),
-    ListToStringOperationQuery(5, "what are even numbers", { case list: List[Int] => list.filter(_ % 2 == 0).mkString(",") }),
-    ListToStringOperationQuery(5, "what are odd numbers", { case list: List[Int] => list.filter(_ % 2 == 0).mkString(",") }),
-    ListToStringOperationQuery(5, "what is the JSON representation of: ", { case list: List[Int] => s"[${list.mkString(",")}]" }),
-    ListToStringOperationQuery(7, "which of the following numbers are primes: ", { case list: List[Int] => list.filter(isPrime).mkString(",") }),
-    UnaryOperationQuery(7, "what is the @1@th fibonnaci number", { case (a) => fib(a) }),
-    ListToStringOperationQuery(5, "what is the JSON representation of: ", { case list: List[Int] => s"[${list.mkString(",")}]" }),
-    TernaryOperationQuery(8, "what is @1@ plus @2@ plus @3@?", { case (a, b, c) => a + b + c}),
-    TernaryOperationQuery(8, "what is @1@ multiplied @2@ multiplied by @3@", { case (a, b, c) => a + b * c}),
-    TernaryOperationQuery(8, "what is @1@ plus @2@ plus by @3@", { case (a, b, c) => a * b + c})
+  private val questions: List[() => Query] = List(
+    () => BasicQuery(1, "what is the capital of Serbia?", "Belgrade"),
+    () => BasicQuery(1, "who is the Prime Minister of Great Britain?", "Theresa May"),
+    () => BasicQuery(1, "what currency Great Britain uses?", "Pound"),
+    () => BasicQuery(1, "what currency did Spain use before the Euro?", "Peseta"),
+    () => BasicQuery(1, "what is the color of the snow?", "White"),
+    () => UnaryOperationQuery(2, "what is the square root of @1@?", { case (a) => Math.sqrt(a).toInt }),
+    () => UnaryOperationQuery(2, "what is the @1@^2?", { case (a) => a * a }),
+    () => UnaryOperationQuery(2, "what is the @1@^3?", { case (a) => a * a * 1 }),
+    () => UnaryOperationQuery(2, "what is the factorial of @1@?", { case (a) => factorial(a) }),
+    () => BinaryOperationQuery(2, "what is @1@ plus @2@?", { case (a, b) => a + b }),
+    () => BinaryOperationQuery(3, "what is @1@ minus @2@?", { case (a, b) => a - b }),
+    () => BinaryOperationQuery(3, "what is @1@ times @2@?", { case (a, b) => a * b }),
+    () => ListOperationQuery(4, "what is the highest number", { list => list.max }),
+    () => ListOperationQuery(5, "what is the lowest number", { list => list.min }),
+    () => ListToStringOperationQuery(5, "what are even numbers", { case list: List[Int] => list.filter(_ % 2 == 0).mkString(",") }),
+    () => ListToStringOperationQuery(5, "what are odd numbers", { case list: List[Int] => list.filter(_ % 2 == 0).mkString(",") }),
+    () => ListToStringOperationQuery(5, "what is the JSON representation of: ", { case list: List[Int] => s"[${list.mkString(",")}]" }),
+    () => ListToStringOperationQuery(7, "which of the following numbers are primes: ", { case list: List[Int] => list.filter(isPrime).mkString(",") }),
+    () => UnaryOperationQuery(7, "what is the @1@th fibonnaci number", { case (a) => fib(a) }),
+    () => ListToStringOperationQuery(5, "what is the JSON representation of: ", { case list: List[Int] => s"[${list.mkString(",")}]" }),
+    () => TernaryOperationQuery(8, "what is @1@ plus @2@ plus @3@?", { case (a, b, c) => a + b + c }),
+    () => TernaryOperationQuery(8, "what is @1@ multiplied @2@ multiplied by @3@", { case (a, b, c) => a + b * c }),
+    () => TernaryOperationQuery(8, "what is @1@ plus @2@ plus by @3@", { case (a, b, c) => a * b + c })
   )
 
 
   def nextQuery(round: Int): Query = {
-    val minLevel = calculateMaxLevel(round)
+    val minLevel = calculateMinLevel(round)
+    val maxLevel = calculateMaxLevel(round)
+
+
 
     val filtered = questions
+      .map(_())
       .filter(_.difficultyLevel >= minLevel)
+      .filter(_.difficultyLevel <= maxLevel)
 
     Random.shuffle(filtered).head
   }
@@ -64,7 +69,8 @@ trait QueryBank {
   }
 
 
-  private def calculateMaxLevel(round: Int): Int = 0
+  private def calculateMinLevel(round: Int): Int = round / 600
+  private def calculateMaxLevel(round: Int): Int = (round / 600) + 1
 }
 
 
