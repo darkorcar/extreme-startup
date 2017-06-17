@@ -1,5 +1,6 @@
 package com.socrates.extremestartup
 
+import java.text.SimpleDateFormat
 import java.util.Date
 
 import akka.actor.{Actor, ActorLogging, Props}
@@ -28,25 +29,28 @@ class Player(id: String, name: String, baseUrl: String, wsClient: StandaloneAhcW
 
       val game = sender()
 
-      call(baseUrl, question, wsClient).onComplete {
+      call(baseUrl, s"$hash $question", wsClient).onComplete {
         case Success(answer) if answer.toUpperCase == expectedAnswer.toUpperCase =>
           log.info(s"Answer Successful! Question($question) -> $answer")
           game ! SuccessfulAnswer(id)
-          history = history.::(Response(new Date().toString,"","SUCCESSFUL"))
+          history = history.::(Response(formatter.format(new Date()), hash, "SUCCESSFUL"))
 
         case Success(answer) if answer.toUpperCase != expectedAnswer.toUpperCase =>
           log.info(s"Answer UnSuccessful! Question($question) Expected(${expectedAnswer.toUpperCase}) Got(${answer.toUpperCase})")
           game ! UnsuccessfulAnswer(id)
-          history = history.::(Response(new Date().toString,"","UNSUCCESSFUL"))
+          history = history.::(Response(formatter.format(new Date()), hash, "UNSUCCESSFUL"))
         case Failure(e) =>
           log.info(s"Player failed to answer with exception message ${e.getMessage}")
           game ! NoAnswer(id)
-          history = history.::(Response(new Date().toString,"","CRASH"))
+          history = history.::(Response(formatter.format(new Date()), hash, "CRASH"))
       }
 
     case GetPlayerHistory(playerId) =>
       sender() ! PlayerHistory(history)
   }
+
+  private val formatter = new SimpleDateFormat("hh:mm:ss")
+
 }
 
 object Player {
@@ -56,6 +60,7 @@ object Player {
 
 
   case class PlayerHistory(responses: List[Response])
+
   case class Response(time: String, questionHash: String, result: String)
 
 }

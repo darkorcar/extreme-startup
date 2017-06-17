@@ -1,5 +1,7 @@
 package com.socrates.extremestartup
 
+import java.util.UUID
+
 import scala.util.Random
 
 trait QueryBank {
@@ -71,6 +73,7 @@ trait QueryBank {
 
 
 trait Query {
+  val hash:String = UUID.randomUUID().toString
   val question: String
   val expectedAnswer: String
 
