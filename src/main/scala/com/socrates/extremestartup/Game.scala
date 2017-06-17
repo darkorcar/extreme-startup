@@ -54,7 +54,7 @@ class Game(wSClient: StandaloneAhcWSClient)
       players.values.foreach { playerRef =>
         playerRef ! query
       }
-      context.system.scheduler.scheduleOnce(3 seconds) {
+      context.system.scheduler.scheduleOnce(10 seconds) {
         self ! GameTick
       }
       increaseRound
