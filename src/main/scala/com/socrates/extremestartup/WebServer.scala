@@ -72,7 +72,12 @@ object WebServer extends App with JsonSupport {
             complete(StatusCodes.OK)
           }
         }
-      }
+      } ~
+      path("home") {
+        getFromResource("view/index.html")
+      } ~ pathPrefix("home") {
+      getFromResourceDirectory("view")
+    }
 
 
   Http().bindAndHandle(routes, "localhost", 1234).onComplete {
