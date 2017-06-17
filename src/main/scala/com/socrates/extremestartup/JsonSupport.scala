@@ -6,7 +6,7 @@ import com.socrates.extremestartup.Player.{PlayerHistory, Response}
 import spray.json._
 
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
-  implicit val scoreFormat = jsonFormat2(Score)
+  implicit val scoreFormat = jsonFormat3(Score)
   implicit val scoresFormat = jsonFormat1(Scores)
 
   implicit val responseFormat = jsonFormat3(Response)

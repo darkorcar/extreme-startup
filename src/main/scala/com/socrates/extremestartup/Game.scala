@@ -22,11 +22,11 @@ class Game(wSClient: StandaloneAhcWSClient)
 
     case RegisterPlayer(name, baseUrl) =>
       log.info(s"User Register Request $name - $baseUrl")
-      val playerId = players.size
-      val newPlayer = createPlayer(name, baseUrl, playerId.toString, wSClient)
+      val playerId = players.size.toString
+      val newPlayer = createPlayer(name, baseUrl, playerId, wSClient)
 
-      players = players + (playerId.toString -> newPlayer)
-      scores = scores + (playerId.toString -> Score(name, 0))
+      players = players + (playerId -> newPlayer)
+      scores = scores + (playerId -> Score(playerId,name, 0))
 
       sender() ! s"""{ "playerId" : "$playerId" }"""
 
@@ -122,7 +122,7 @@ object Game {
 
   case class GetPlayerHistory(playerId: String)
 
-  case class Score(name: String, points: Int)
+  case class Score(playerId:String, name: String, points: Int)
 
   case class Scores(scores: List[Score])
 
