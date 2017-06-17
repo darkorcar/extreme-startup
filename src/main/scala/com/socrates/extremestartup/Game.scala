@@ -59,8 +59,20 @@ class Game(wSClient: StandaloneAhcWSClient)
       }
       increaseRound
 
+    case GameTickForPlayer(playerId) =>
+      val query = nextQuery(round)
+      players
+        .filterKeys(_ == playerId)
+        .values
+        .foreach { playerRef =>
+        playerRef ! query
+      }
+
     case SuccessfulAnswer(playerId) =>
       scorePlayer(playerId, 1)
+      context.system.scheduler.scheduleOnce(3 seconds) {
+        self ! GameTickForPlayer(playerId)
+      }
 
     case UnsuccessfulAnswer(playerId) =>
       scorePlayer(playerId, -1)
@@ -117,5 +129,6 @@ object Game {
   case object StartGame
   case object FinishGame
   case object GameTick
+  case class GameTickForPlayer(playerId: Int)
 
 }
