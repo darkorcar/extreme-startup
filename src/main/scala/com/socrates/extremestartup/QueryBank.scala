@@ -13,10 +13,10 @@ trait QueryBank {
     () => BasicQuery(1, "what is the currency used in Great Britain", "Pound"),
     () => BasicQuery(1, "what currency did Spain use before the Euro", "Peseta"),
     () => BasicQuery(1, "what is the highest mountain in the world", "Mount Everest"),
+    () => BinaryOperationQuery(1, "what is @1@ plus @2@", { case (a, b) => a + b }),
     () => UnaryOperationQuery(2, "what is the square root of @1@", { case (a) => Math.sqrt(a).toInt }),
     () => UnaryOperationQuery(2, "what is the @1@^2", { case (a) => a * a }),
     () => UnaryOperationQuery(2, "what is the @1@^3", { case (a) => a * a * 1 }),
-    () => BinaryOperationQuery(2, "what is @1@ plus @2@", { case (a, b) => a + b }),
     () => BinaryOperationQuery(3, "what is @1@ minus @2@", { case (a, b) => a - b }),
     () => BinaryOperationQuery(3, "what is @1@ times @2@", { case (a, b) => a * b }),
     () => ListOperationQuery(4, "what is the highest number", { list => list.max }),
@@ -67,8 +67,8 @@ trait QueryBank {
   }
 
   //One round each 10 seconds
-  private def calculateMinLevel(round: Int): Int = round / 60
-  private def calculateMaxLevel(round: Int): Int = if (round < 180) (round / 60) + 2 else Int.MaxValue
+  private def calculateMinLevel(round: Int): Int = (round / 60) - 2
+  private def calculateMaxLevel(round: Int): Int = if (round < 180) (round / 60) + 1 else Int.MaxValue
 }
 
 
