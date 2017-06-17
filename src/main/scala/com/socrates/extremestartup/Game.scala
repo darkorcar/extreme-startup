@@ -33,7 +33,7 @@ class Game(wSClient: StandaloneAhcWSClient)
 
     case GetScores =>
       log.info("GetScores received")
-      sender() ! Scores(scores.values.toList)
+      sender() ! Scores(scores.values.toList.sortBy(- _.points))
 
     case msg@GetPlayerHistory(playerId) =>
       players.get(playerId).foreach(player => player forward msg)
