@@ -49,7 +49,6 @@ object WebServer extends App with JsonSupport {
       path("scores") {
         get {
           pathEndOrSingleSlash {
-            log.info("Get scores")
             implicit val timeout = Timeout(5.seconds)
             val scores: Future[Scores] = (game ? GetScores).mapTo[Scores]
             complete(StatusCodes.OK, scores)
@@ -59,7 +58,6 @@ object WebServer extends App with JsonSupport {
       path("scores" / Segment) { playerId:String =>
         get {
           pathEndOrSingleSlash {
-            log.info("Get scores")
             implicit val timeout = Timeout(5.seconds)
             val history: Future[PlayerHistory] = (game ? GetPlayerHistory(playerId)).mapTo[PlayerHistory]
             complete(StatusCodes.OK, history)
