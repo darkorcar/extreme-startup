@@ -19,7 +19,7 @@ trait QueryBank {
     () => BinaryOperationQuery(3, "what is @1@ minus @2@", { case (a, b) => a - b }),
     () => BinaryOperationQuery(3, "what is @1@ times @2@", { case (a, b) => a * b }),
     () => ListOperationQuery(4, "what is the highest number", { list => list.max }),
-    () => ListOperationQuery(5, "what is the lowest number", { list => list.min }),
+    () => ListOperationQuery(4, "what is the lowest number", { list => list.min }),
     () => ListToStringOperationQuery(5, "which are the even numbers", { case list: List[Int] => list.filter(_ % 2 == 0).mkString(",") }),
     () => ListToStringOperationQuery(5, "which are the odd numbers", { case list: List[Int] => list.filter(_ % 2 == 0).mkString(",") }),
     () => ListToStringOperationQuery(7, "which are the prime numbers", { case list: List[Int] => list.filter(isPrime).mkString(",") }),
