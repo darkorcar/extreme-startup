@@ -78,7 +78,7 @@ class Game(wSClient: StandaloneAhcWSClient)
       scorePlayer(playerId, -1)
 
     case NoAnswer(playerId) =>
-      scorePlayer(playerId, -2)
+      scorePlayer(playerId, -20)
 
     case FinishGame =>
       log.info("Finish game")
