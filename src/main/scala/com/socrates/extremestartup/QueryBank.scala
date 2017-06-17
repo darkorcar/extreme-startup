@@ -36,10 +36,12 @@ trait QueryBank {
     val minLevel = calculateMinLevel(round)
     val maxLevel = calculateMaxLevel(round)
 
+
+
     val filtered = questions
       .map(_())
       .filter(_.difficultyLevel >= minLevel)
-      //.filter(_.difficultyLevel <= maxLevel)
+      .filter(_.difficultyLevel <= maxLevel)
 
     Random.shuffle(filtered).head
   }
@@ -66,9 +68,9 @@ trait QueryBank {
     }
   }
 
-
-  private def calculateMinLevel(round: Int): Int = round / 600
-  private def calculateMaxLevel(round: Int): Int = (round / 600) + 1
+  //One round each 10 seconds
+  private def calculateMinLevel(round: Int): Int = round / 60
+  private def calculateMaxLevel(round: Int): Int = if (round < 180) (round / 60) + 1 else Int.MaxValue
 }
 
 
