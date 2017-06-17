@@ -9,16 +9,21 @@
 
     <script>
 
+    function getUrlVar(key){
+	var result = new RegExp(key + "=([^&]*)", "i").exec(window.location.search);
+	return result && unescape(result[1]) || "";
+    }
+
     function reloadData(){
-      var jqxhr = $.get( "/scores")
+      var jqxhr = $.get( "/scores/" + getUrlVar("t"))
       .done(function(data) {
 
-         var scoreRows = data.scores.map(function (item, index) {
-           return "<tr><th>" + (index + 1) + "</th><td><a href=\"/home/history.html?t=" + item.playerId
-                  + "\" title=\"" + item.name + "\">" + item.name + "</a></td><td>" + item.points + "</td></tr>"
+         var scoreRows = data.responses.map(function (item, index) {
+           return "<tr><td>" + item.time
+                  + "</td><td>" + item.questionHash + "</td><td>" + item.result + "</td></tr>"
          });
 
-         var scoresTable = $('#scores-table');
+         var scoresTable = $('#responses-table');
          if (scoreRows.length) {
            scoresTable.html(scoreRows);
          }
@@ -47,7 +52,7 @@
       <div class="hero-body">
         <div class="container has-text-centered">
           <h1 class="title">
-            LeaderBoard
+            Team History
           </h1>
         </div>
       </div>
@@ -60,21 +65,21 @@
         <table class="table">
         <thead>
           <tr>
-            <th><abbr title="Position">Pos</abbr></th>
-            <th>Team</th>
-            <th><abbr title="Points">Pts</abbr></th>
+            <th>Date</th>
+            <th><abbr title="Question hash">#</abbr></th>
+            <th>Result</th>
           </tr>
         </thead>
         <tfoot>
           <tr>
-            <th><abbr title="Position">Pos</abbr></th>
-            <th>Team</th>
-            <th><abbr title="Points">Pts</abbr></th>
+            <th>Date</th>
+            <th><abbr title="Question hash">#</abbr></th>
+            <th>Result</th>
           </tr>
         </tfoot>
-        <tbody id="scores-table">
+        <tbody id="responses-table">
           <tr>
-            <td colspan="4">No teams registered yet</th>
+            <td colspan="4">No questions available yet</th>
           </tr>
         </tbody>
       </table>
